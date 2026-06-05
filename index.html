@@ -1,0 +1,435 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Training Roadmap Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f9f9f8; color: #1a1a1a; }
+  :root {
+    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --color-background-primary: #ffffff;
+    --color-background-secondary: #f3f3f1;
+    --color-text-primary: #1a1a1a;
+    --color-text-secondary: #4a4a4a;
+    --color-text-tertiary: #888880;
+    --color-border-primary: #aaaaaa;
+    --color-border-secondary: #d0d0cc;
+    --color-border-tertiary: #e5e5e2;
+  }
+  .ci { transition: opacity .22s ease, transform .22s ease; }
+  .ci.fo { opacity: 0 !important; transform: translateY(4px); }
+  .ci.hd { display: none; }
+  input, select, textarea, button { font-family: inherit; }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useMemo, useEffect, useCallback, useRef } = React;
+
+const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbw-eV9yDmJMsUbJEjJP8vo0n1K7osgXMpqMJeVuptzMl_VDA0xf3460zLmvThHuFmcs/exec";
+
+const FALLBACK = [
+  {code:"1",topic:"Building Slick Products & Templates",lead:"@Maddie Farr",crit:"",category:"Company Scaling and Growing",pre1:"13",pre2:"",suc1:"15",suc2:"",date:"",desc:"How to build, curate, and leverage high-quality templates and showcase demos."},
+  {code:"2",topic:"New Feature Walkthroughs",lead:"Product / @Dennis Hull (EDT)",crit:"1",category:"Company Scaling and Growing",pre1:"",pre2:"",suc1:"",suc2:"",date:"",desc:"Recurring release review: Dynamic Timelines, Data Tables, Insert List to Maps."},
+  {code:"3",topic:"C2 Charts & Task Organization",lead:"TBD",crit:"0",category:"Company Scaling and Growing",pre1:"",pre2:"",suc1:"",suc2:"",date:"",desc:"Collaborative command relationship charts, rapid modification, nested org structure."},
+  {code:"4",topic:"Timelines & Sync Matrices",lead:"TBD",crit:"2",category:"Company Scaling and Growing",pre1:"",pre2:"",suc1:"",suc2:"",date:"",desc:"Building and managing smart time scales, phasing, and complex sync products."},
+  {code:"5",topic:"Documents & Orders",lead:"TBD",crit:"2",category:"Company Scaling and Growing",pre1:"",pre2:"",suc1:"",suc2:"",date:"",desc:"Long-form plans and orders; automated formatting, AMHS compatibility."},
+  {code:"6",topic:"AI Assist Deep Dive",lead:"@Ben Jameson CET",crit:"0",category:"Company Scaling and Growing",pre1:"",pre2:"",suc1:"",suc2:"",date:"",desc:"Feature flag walkthrough — drafting plans, orders, and briefs from live plan context."},
+  {code:"7",topic:"Train-the-Trainer POI",lead:"@Josh Lobdell",crit:"0",category:"Company Scaling and Growing",pre1:"",pre2:"",suc1:"",suc2:"",date:"",desc:"Modular framework for scalable command onboarding. TTT proficiency levels 1–4."},
+  {code:"9",topic:"Onebrief ↔ Foundry Integration",lead:"@Dennis Hull / @Ben Jameson",crit:"1",category:"Technical & Business Upskilling",pre1:"",pre2:"",suc1:"17",suc2:"10",date:"",desc:"Full hands-on training using the standalone training environment."},
+  {code:"10",topic:"Read API Overview",lead:"@Ben Jameson CET",crit:"0",category:"Technical & Business Upskilling",pre1:"",pre2:"",suc1:"",suc2:"",date:"",desc:"What the Read API does, how it supports downstream integrations."},
+  {code:"11",topic:"How to Linear",lead:"Volunteer Engineer",crit:"0",category:"Technical & Business Upskilling",pre1:"",pre2:"",suc1:"",suc2:"",date:"",desc:"Basic Linear literacy — issue tracking, visibility into Product/Engineering."},
+  {code:"12",topic:"How to GitHub",lead:"Volunteer Engineer",crit:"1",category:"Technical & Business Upskilling",pre1:"",pre2:"",suc1:"",suc2:"",date:"",desc:"Basic Git/GitHub literacy for CR team members."},
+  {code:"13",topic:"Knowledge Management & Data Strategy",lead:"@Jon Anderson (EDT)",crit:"0",category:"Technical & Business Upskilling",pre1:"",pre2:"",suc1:"",suc2:"",date:"",desc:"KM frameworks, data integration across platforms."},
+  {code:"15",topic:"CR Tech Upskilling Rotation",lead:"@Dennis Hull (EDT)",crit:"2",category:"Technical & Business Upskilling",pre1:"",pre2:"",suc1:"",suc2:"",date:"",desc:"Structured CR upskilling model; formal curriculum sprint."},
+  {code:"16",topic:"Cross-Service Military Education",lead:"@Sean Palmertree / @Dennis Hull",crit:"2",category:"Technical & Business Upskilling",pre1:"",pre2:"",suc1:"",suc2:"",date:"",desc:"Service-specific primers: Surface Warfare 101, Red Flag, Army MDMP context."},
+  {code:"17",topic:"Palantir Upskilling",lead:"TBD",crit:"2",category:"Technical & Business Upskilling",pre1:"",pre2:"",suc1:"",suc2:"",date:"",desc:"Navigate Palantir apps: Workshop, Target Workbench, Gaia."},
+  {code:"18",topic:"Competitive Business Landscape",lead:"TBD",crit:"2",category:"Technical & Business Upskilling",pre1:"",pre2:"",suc1:"",suc2:"",date:"",desc:"Where Onebrief stands within the competitive Defense Tech ecosystem."},
+  {code:"19",topic:"Salesforce 101",lead:"TBD",crit:"2",category:"Technical & Business Upskilling",pre1:"",pre2:"",suc1:"",suc2:"",date:"",desc:"Navigate, employ, and interpret information in Salesforce."},
+  {code:"20",topic:"Claude Code 101",lead:"Principal Engineer + @Ben Jameson",crit:"0",category:"AI: Enhance and Assist Your Work",pre1:"25",pre2:"21",suc1:"23",suc2:"28",date:"2025-06-11",desc:"Hands-on intro to Claude Code for GDT. LOCKED: June 11th @ 1000 EST."},
+  {code:"21",topic:"How to Talk About AI",lead:"@Ben Jameson CET",crit:"2",category:"AI: Enhance and Assist Your Work",pre1:"",pre2:"",suc1:"",suc2:"",date:"",desc:"Foundational AI vocabulary. Managing customer expectations."},
+  {code:"22",topic:"FoC Team Workflow: Rapid Problem-Solving with AI",lead:"@Eric Schmitz / @Cody",crit:"0",category:"AI: Enhance and Assist Your Work",pre1:"",pre2:"",suc1:"",suc2:"",date:"",desc:"How the FoC team uses Claude and AI to accelerate product development."},
+  {code:"23",topic:"Claude + Notion MCP",lead:"@Josh Favaloro (EST)",crit:"0",category:"AI: Enhance and Assist Your Work",pre1:"",pre2:"",suc1:"",suc2:"",date:"",desc:"Using Claude with Notion MCP for knowledge management."},
+  {code:"24",topic:"Competitive AI Landscape",lead:"@Joe Lemens (NC - EST)",crit:"2",category:"AI: Enhance and Assist Your Work",pre1:"",pre2:"",suc1:"",suc2:"",date:"",desc:"THUNDERFORGE/Scale AI, Gallatin AI, and positioning Onebrief vs competitors."},
+  {code:"25",topic:"Reasoning Models & AI Direction",lead:"@Ben Jameson CET",crit:"1",category:"AI: Enhance and Assist Your Work",pre1:"",pre2:"",suc1:"",suc2:"",date:"",desc:"Where AI is heading: reasoning models, agentic workflows, future capabilities."},
+  {code:"26",topic:"AI-Enabled Customer Intelligence",lead:"@Josh Favaloro (EST)",crit:"2",category:"AI: Enhance and Assist Your Work",pre1:"",pre2:"",suc1:"",suc2:"",date:"",desc:"Using AI to synthesize account data and build weekly newsletters."},
+  {code:"27",topic:"AE Initial Setup & Configuration",lead:"@Cliff Pullig (CDT)",crit:"0",category:"Atom Engine",pre1:"",pre2:"",suc1:"",suc2:"",date:"",desc:"Download/install, server configuration, portal access."},
+  {code:"28",topic:"AE Entity MCP & Claude Code",lead:"@Cliff Pullig / @Will Hoover",crit:"2",category:"Atom Engine",pre1:"",pre2:"",suc1:"",suc2:"",date:"",desc:"Entities, components, parametrics, data input, tree viewer."},
+  {code:"29",topic:"AE Apprentice-Level Training",lead:"@Cliff Pullig (CDT)",crit:"0",category:"Atom Engine",pre1:"",pre2:"",suc1:"",suc2:"",date:"",desc:"TL1–TL4: Program navigation through operational employment."},
+  {code:"30",topic:"Unit Movement, Navigation & 3D Terrain",lead:"@Cliff Pullig (CDT)",crit:"1",category:"Atom Engine",pre1:"",pre2:"",suc1:"",suc2:"",date:"",desc:"Moving entities on map, navigation mesh setup, terrain mechanics."},
+  {code:"31",topic:"AE Mini-Exercise Series",lead:"@Cliff Pullig / AEDT",crit:"",category:"Atom Engine",pre1:"32",pre2:"",suc1:"35",suc2:"36",date:"",desc:"Structured team-vs-team exercise using CONOPs. Recorded via Loom."},
+  {code:"32",topic:"Wargaming Fundamentals",lead:"@Cory Pederson (ET)",crit:"0",category:"Atom Engine",pre1:"",pre2:"",suc1:"",suc2:"",date:"",desc:"Wargaming principles, red/blue/white cell roles, tactical scenario generation."},
+  {code:"33",topic:"Mod Kit & Content Creation",lead:"@Will Hoover",crit:"1",category:"Atom Engine",pre1:"",pre2:"",suc1:"",suc2:"",date:"",desc:"Atom Engine Mod Kit in Godot; creating custom units."},
+  {code:"34",topic:"How to Demo Atom Engine",lead:"AEDT",crit:"0",category:"Atom Engine",pre1:"32",pre2:"",suc1:"35",suc2:"",date:"",desc:"Best practices for customer demos; Loom recording setup."},
+  {code:"35",topic:"AE Talking Points & Customer Positioning",lead:"@Joe Lemens / @Will Hoover",crit:"1",category:"Atom Engine",pre1:"",pre2:"",suc1:"",suc2:"",date:"",desc:"How to introduce AE in customer conversations."},
+  {code:"36",topic:"AE Exercise AAR Process",lead:"@Cory Pederson / AEDT",crit:"2",category:"Atom Engine",pre1:"",pre2:"",suc1:"",suc2:"",date:"",desc:"Structured AE exercise; Dovetail tagging, AAR format."},
+];
+
+const RAW_CHAINS = [
+  ["13","1","15"],["9","17"],["9","10"],
+  ["25","21","20","23"],["20","28"],
+  ["32","34","35"],["32","31","35","36"],
+];
+
+const SEQ_COLORS = [
+  {bg:"#FFF3E0",border:"#E8A820",text:"#7A4F00"},
+  {bg:"#E8F5E9",border:"#43A047",text:"#1B5E20"},
+  {bg:"#E3F2FD",border:"#1E88E5",text:"#0D47A1"},
+  {bg:"#F3E5F5",border:"#9C27B0",text:"#4A148C"},
+  {bg:"#FCE4EC",border:"#E91E63",text:"#880E4F"},
+  {bg:"#E0F7FA",border:"#00ACC1",text:"#006064"},
+  {bg:"#FFF8E1",border:"#FFB300",text:"#6D4C00"},
+];
+
+const CRIT = {
+  "0":{label:"Business critical",bg:"#FAECE7",color:"#993C1D"},
+  "1":{label:"Medium",bg:"#E3F2FD",color:"#185FA5"},
+  "2":{label:"Low",bg:"#F1EFE8",color:"#5F5E5A"},
+};
+
+const COL_TINTS = ["rgba(99,120,255,0.04)","rgba(16,180,120,0.04)","rgba(255,160,40,0.04)","rgba(200,80,200,0.04)"];
+const CATS = ["Company Scaling and Growing","Technical & Business Upskilling","AI: Enhance and Assist Your Work","Atom Engine"];
+const BLANK = {code:"",topic:"",lead:"",crit:"",category:"",pre1:"",pre2:"",suc1:"",suc2:"",date:"",desc:"",poi:""};
+
+function byCodeMap(arr){const m={};arr.forEach(x=>m[x.code]=x);return m;}
+function codeToGroupMap(){const m={};RAW_CHAINS.forEach((c,i)=>c.forEach(x=>{if(!(x in m))m[x]=i;}));return m;}
+function getChain(code){const ch=RAW_CHAINS.filter(c=>c.includes(code));if(!ch.length)return[];return ch.reduce((a,b)=>b.length>a.length?b:a,ch[0]);}
+function fmtDate(d){if(!d)return"";try{const dt=new Date(d+"T00:00:00");return dt.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});}catch{return d;}}
+
+const CTG = codeToGroupMap();
+
+function App() {
+  const [sessions, setSessions] = useState(FALLBACK);
+  const [sync, setSync] = useState("idle");
+  const [sel, setSel] = useState(null);
+  const [q, setQ] = useState("");
+  const [critF, setCritF] = useState("all");
+  const [seqF, setSeqF] = useState("all");
+  const [panel, setPanel] = useState(null);
+  const [mode, setMode] = useState("view");
+  const [eForm, setEForm] = useState(null);
+  const [addCat, setAddCat] = useState(null);
+  const [aForm, setAForm] = useState(BLANK);
+  const [saving, setSaving] = useState(false);
+  const [vis, setVis] = useState(()=>new Set(FALLBACK.map(s=>s.code)));
+  const [fading, setFading] = useState(new Set());
+  const [lines, setLines] = useState([]);
+  const [bSize, setBSize] = useState({w:900,h:700});
+  const boardRef = useRef(null);
+  const cRefs = useRef({});
+  const byCd = useMemo(()=>byCodeMap(sessions),[sessions]);
+
+  useEffect(()=>{
+    setSync("loading");
+    fetch(WEBAPP_URL)
+      .then(r=>r.json())
+      .then(j=>{
+        if(j.status==="ok"&&j.data?.length){
+          setSessions(j.data.map(r=>({
+            code:r["Session Code"]||"",topic:r["Topic"]||"",lead:r["Suggested Lead"]||"",
+            crit:r["Criticality"]||"",category:(r["Category"]||r["Category "]||"").trim(),
+            pre1:r["Predecessor -2"]||"",pre2:r["Predecessor -1"]||"",
+            suc1:r["Successor 1"]||"",suc2:r["Successor 2"]||"",
+            date:r["Date"]||"",desc:r["Description"]||"",poi:r["POI (Program of Instruction)"]||"",
+          })).filter(r=>r.code&&r.topic));
+          setSync("ok");
+        } else setSync("error");
+      }).catch(()=>setSync("error"));
+  },[]);
+
+  useEffect(()=>{
+    const el=boardRef.current; if(!el) return;
+    const ro=new ResizeObserver(()=>setBSize({w:el.scrollWidth,h:el.scrollHeight}));
+    ro.observe(el); return()=>ro.disconnect();
+  },[]);
+
+  const filtered=useMemo(()=>{
+    const lq=q.toLowerCase();
+    return new Set(sessions.filter(s=>{
+      const mQ=!lq||s.topic.toLowerCase().includes(lq)||s.code.includes(lq)||s.lead.toLowerCase().includes(lq);
+      const mC=critF==="all"||s.crit===critF;
+      const isSeq=CTG[s.code]!==undefined;
+      const mS=seqF==="all"||(seqF==="sequenced"&&isSeq)||(seqF==="standalone"&&!isSeq);
+      return mQ&&mC&&mS;
+    }).map(s=>s.code));
+  },[sessions,q,critF,seqF]);
+
+  useEffect(()=>{
+    const toHide=[...vis].filter(c=>!filtered.has(c));
+    const allOk=[...filtered].every(c=>vis.has(c));
+    if(!toHide.length&&allOk)return;
+    setFading(new Set(toHide));
+    const t=setTimeout(()=>{setVis(new Set(filtered));setFading(new Set());},220);
+    return()=>clearTimeout(t);
+  },[filtered]);
+
+  function computeLines(chain){
+    if(!boardRef.current||chain.length<2){setLines([]);return;}
+    const br=boardRef.current.getBoundingClientRect();
+    const pts=chain.map(code=>{
+      const el=cRefs.current[code]; if(!el)return null;
+      const r=el.getBoundingClientRect();
+      return{cx:r.left-br.left+r.width/2,cy:r.top-br.top+r.height/2,
+             left:r.left-br.left,right:r.right-br.left,
+             top:r.top-br.top,bottom:r.bottom-br.top};
+    }).filter(Boolean);
+    const segs=[];
+    for(let i=0;i<pts.length-1;i++){
+      const a=pts[i],b=pts[i+1];
+      let x1,y1,x2,y2;
+      if(Math.abs(a.cx-b.cx)>40){x1=a.right;y1=a.cy;x2=b.left;y2=b.cy;}
+      else{x1=a.cx;y1=a.bottom;x2=b.cx;y2=b.top;}
+      segs.push({x1,y1,x2,y2});
+    }
+    setLines(segs);
+  }
+
+  function openCard(code){setSel(code);setPanel(code);setMode("view");setEForm(null);setTimeout(()=>computeLines(getChain(code)),80);}
+  function closeCard(){setSel(null);setPanel(null);setMode("view");setLines([]);}
+
+  async function doSync(action,row){
+    const sr={"Session Code":row.code,"Topic":row.topic,"Suggested Lead":row.lead,"Criticality":row.crit,"Category ":row.category,"Predecessor -2":row.pre1,"Predecessor -1":row.pre2,"Successor 1":row.suc1,"Successor 2":row.suc2,"Date":row.date||"","Description":row.desc,"POI (Program of Instruction)":row.poi||""};
+    const r=await fetch(WEBAPP_URL,{method:"POST",body:JSON.stringify({action,row:sr})});
+    return r.json();
+  }
+
+  async function saveEdit(){setSaving(true);setSessions(prev=>prev.map(s=>s.code===eForm.code?eForm:s));try{await doSync("update",eForm);}catch{}setSaving(false);setMode("view");}
+  async function saveAdd(){if(!aForm.topic.trim()||!aForm.code.trim())return;setSaving(true);setSessions(prev=>[...prev,{...aForm}]);try{await doSync("create",aForm);}catch{}setSaving(false);setAddCat(null);}
+
+  const panelSess=panel?byCd[panel]:null;
+  const chain=panel?getChain(panel):[];
+  const chainSet=new Set(chain);
+  const panelGi=panel!=null?CTG[panel]:undefined;
+  const panelSc=panelGi!==undefined?SEQ_COLORS[panelGi%SEQ_COLORS.length]:null;
+  const selIsSeq=panel?CTG[panel]!==undefined:false;
+
+  const inp={width:"100%",padding:"5px 8px",fontSize:12,border:"0.5px solid #d0d0cc",borderRadius:6,background:"#fff",color:"#1a1a1a",marginTop:3,boxSizing:"border-box"};
+  const lbl={fontSize:10,fontWeight:500,color:"#888880",textTransform:"uppercase",letterSpacing:".05em",display:"block",marginTop:10};
+
+  function FBtn({active,onClick,children}){
+    return <button onClick={onClick} style={{padding:"5px 12px",fontSize:12,border:"0.5px solid #d0d0cc",borderRadius:20,cursor:"pointer",fontWeight:active?500:400,background:active?"#e8e8e5":"#fff",color:active?"#1a1a1a":"#4a4a4a",transition:"background .15s"}}>{children}</button>;
+  }
+
+  return (
+    <div style={{fontFamily:"var(--font-sans)",padding:"1.5rem 2rem 2rem 96px",minHeight:"100vh"}}>
+
+      {/* Sync dot */}
+      <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:14}}>
+        <div style={{width:7,height:7,borderRadius:"50%",background:sync==="ok"?"#43A047":sync==="error"?"#E24B4A":sync==="loading"?"#FFB300":"#aaa"}}/>
+        <span style={{fontSize:11,color:"#888880"}}>{sync==="ok"?"Synced with Google Sheets":sync==="loading"?"Connecting to Google Sheets…":sync==="error"?"Using local data (sheet unreachable)":"Initializing…"}</span>
+        {sync==="error"&&<button onClick={()=>{setSync("loading");fetch(WEBAPP_URL).then(r=>r.json()).then(j=>{if(j.status==="ok"&&j.data?.length){setSessions(j.data.map(r=>({code:r["Session Code"]||"",topic:r["Topic"]||"",lead:r["Suggested Lead"]||"",crit:r["Criticality"]||"",category:(r["Category"]||r["Category "]||"").trim(),pre1:r["Predecessor -2"]||"",pre2:r["Predecessor -1"]||"",suc1:r["Successor 1"]||"",suc2:r["Successor 2"]||"",date:r["Date"]||"",desc:r["Description"]||"",poi:r["POI (Program of Instruction)"]||""})).filter(r=>r.code&&r.topic));setSync("ok");}else setSync("error");}).catch(()=>setSync("error"));}} style={{fontSize:11,padding:"2px 8px",border:"0.5px solid #d0d0cc",borderRadius:6,cursor:"pointer",background:"none",color:"#4a4a4a"}}>Retry</button>}
+      </div>
+
+      {/* Filter bar */}
+      <div style={{background:"#f3f3f1",border:"0.5px solid #e5e5e2",borderRadius:10,padding:"12px 16px",marginBottom:22}}>
+        <input value={q} onChange={e=>setQ(e.target.value)} placeholder="🔍 Search sessions, leads, keywords…"
+          style={{width:"100%",padding:"7px 12px",fontSize:13,border:"0.5px solid #d0d0cc",borderRadius:20,background:"#fff",color:"#1a1a1a",boxSizing:"border-box",marginBottom:12}}/>
+        <div style={{display:"flex",alignItems:"center",gap:20,flexWrap:"wrap"}}>
+          <div style={{display:"flex",alignItems:"center",gap:6}}>
+            <span style={{fontSize:11,fontWeight:500,color:"#4a4a4a"}}>Priority</span>
+            {[["all","All"],["0","🔴 Business Critical"],["1","🔵 Medium"],["2","⚪ Low"]].map(([v,l])=>
+              <FBtn key={v} active={critF===v} onClick={()=>setCritF(v)}>{l}</FBtn>)}
+          </div>
+          <div style={{width:1,height:22,background:"#e5e5e2"}}/>
+          <div style={{display:"flex",alignItems:"center",gap:6,marginLeft:36}}>
+            <span style={{fontSize:11,fontWeight:500,color:"#4a4a4a"}}>Sequence</span>
+            {[["all","All"],["sequenced","⇄ Sequenced"],["standalone","Standalone"]].map(([v,l])=>
+              <FBtn key={v} active={seqF===v} onClick={()=>setSeqF(v)}>{l}</FBtn>)}
+          </div>
+        </div>
+      </div>
+
+      {/* Board + panel */}
+      <div style={{display:"flex",gap:16,alignItems:"flex-start"}}>
+        <div ref={boardRef} style={{position:"relative",flex:1,minWidth:0}}>
+          {lines.length>0&&(
+            <svg style={{position:"absolute",top:0,left:0,width:bSize.w,height:bSize.h,pointerEvents:"none",zIndex:10,overflow:"visible"}}>
+              <defs>
+                <marker id="arr" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+                  <polygon points="0 0,8 3,0 6" fill="#60B4FF" opacity="0.85"/>
+                </marker>
+                <filter id="bg">
+                  <feGaussianBlur stdDeviation="3" result="b"/>
+                  <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+                </filter>
+              </defs>
+              {lines.map((l,i)=>{
+                const dx=l.x2-l.x1,dy=l.y2-l.y1,h=Math.abs(dx)>Math.abs(dy);
+                const d=`M${l.x1},${l.y1} C${h?l.x1+dx*.5:l.x1},${h?l.y1:l.y1+dy*.4} ${h?l.x2-dx*.1:l.x2},${h?l.y2:l.y2-dy*.1} ${l.x2},${l.y2}`;
+                return <g key={i} filter="url(#bg)">
+                  <path d={d} fill="none" stroke="rgba(96,180,255,0.2)" strokeWidth="7"/>
+                  <path d={d} fill="none" stroke="#60B4FF" strokeWidth="1.8" strokeDasharray="5,3" markerEnd="url(#arr)" opacity="0.85"/>
+                </g>;
+              })}
+            </svg>
+          )}
+
+          <div style={{display:"flex",gap:14,overflowX:"auto",alignItems:"flex-start",paddingBottom:12}}>
+            {CATS.map((cat,ci)=>{
+              const catS=sessions.filter(s=>s.category===cat);
+              return (
+                <div key={cat} style={{minWidth:215,maxWidth:230,flexShrink:0,background:COL_TINTS[ci],border:"0.5px solid rgba(120,120,140,0.10)",borderRadius:12,padding:"14px 12px 12px"}}>
+                  <div style={{fontSize:14,fontWeight:700,textDecoration:"underline",color:"#1a1a1a",marginBottom:12,lineHeight:1.3}}>
+                    {cat}
+                    <span style={{fontSize:11,fontWeight:400,color:"#888880",marginLeft:7,textDecoration:"none"}}>{catS.filter(s=>vis.has(s.code)||fading.has(s.code)).length}</span>
+                  </div>
+                  <div style={{display:"flex",flexDirection:"column",gap:7}}>
+                    {catS.map(s=>{
+                      const gi=CTG[s.code];
+                      const sc=gi!==undefined?SEQ_COLORS[gi%SEQ_COLORS.length]:null;
+                      const cc=CRIT[s.crit];
+                      const isSel=sel===s.code;
+                      const inChain=panel&&chainSet.has(s.code)&&!isSel;
+                      const dimmed=sel&&!isSel&&!inChain;
+                      const isFo=fading.has(s.code);
+                      const isHd=!vis.has(s.code)&&!isFo;
+                      let bg=sc?sc.bg:"#fff",border="0.5px solid #e5e5e2",shadow="none",opacity=1;
+                      if(isSel){bg="#fff";border="2px solid #FFD700";shadow="0 0 0 2px #FFD700,0 0 14px 5px rgba(255,215,0,0.5)";opacity=0.85;}
+                      else if(inChain&&selIsSeq){bg="#EBF6FF";border="1.5px solid #60B4FF";shadow="0 0 0 1.5px #60B4FF,0 0 12px 4px rgba(96,180,255,0.35)";}
+                      else if(dimmed){opacity=0.38;}
+                      return (
+                        <div key={s.code} ref={el=>{cRefs.current[s.code]=el;}}
+                          className={`ci${isFo?" fo":""}${isHd?" hd":""}`}
+                          onClick={()=>isSel?closeCard():openCard(s.code)}
+                          style={{borderRadius:8,border,padding:"9px 11px",cursor:"pointer",background:bg,opacity,boxShadow:shadow,transition:"opacity .22s ease,transform .22s ease,box-shadow .2s ease",position:"relative",zIndex:isSel||inChain?5:1}}>
+                          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:3,gap:4}}>
+                            <span style={{fontSize:10,color:"#888880",fontWeight:500}}>#{s.code}</span>
+                            {cc&&<span style={{fontSize:10,padding:"1px 5px",borderRadius:10,background:cc.bg,color:cc.color,whiteSpace:"nowrap",fontWeight:500}}>{cc.label}</span>}
+                          </div>
+                          <div style={{fontSize:12,fontWeight:500,color:"#1a1a1a",lineHeight:1.35,marginBottom:3}}>{s.topic}</div>
+                          {s.lead&&<div style={{fontSize:11,color:"#888880",marginBottom:3}}>{s.lead}</div>}
+                          {s.date&&<div style={{fontSize:10,color:"#888880",marginBottom:3}}>📅 {fmtDate(s.date)}</div>}
+                          {sc?<div style={{display:"inline-flex",alignItems:"center",gap:3,fontSize:10,padding:"2px 6px",borderRadius:10,background:`${sc.border}22`,color:sc.text,fontWeight:500}}>⇄ Sequenced</div>
+                            :<div style={{fontSize:10,color:"#888880",fontStyle:"italic"}}>Standalone</div>}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <button onClick={()=>{setAForm({...BLANK,category:cat});setAddCat(cat);}}
+                    onMouseEnter={e=>{e.currentTarget.style.borderColor="#aaa";e.currentTarget.style.color="#4a4a4a";}}
+                    onMouseLeave={e=>{e.currentTarget.style.borderColor="#d0d0cc";e.currentTarget.style.color="#888880";}}
+                    style={{marginTop:12,width:"100%",padding:"7px 0",fontSize:12,border:"1.5px solid #d0d0cc",borderRadius:20,cursor:"pointer",background:"none",color:"#888880",display:"flex",alignItems:"center",justifyContent:"center",gap:5}}>
+                    <span style={{fontSize:16,lineHeight:1}}>+</span> Add session
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Detail panel */}
+        {panelSess&&(
+          <div style={{width:295,flexShrink:0,background:"rgba(255,255,255,0.97)",border:"0.5px solid #d0d0cc",borderRadius:12,padding:"1.2rem",maxHeight:"80vh",overflowY:"auto",position:"sticky",top:24,boxShadow:"0 4px 20px rgba(0,0,0,0.08)"}}>
+            <button onClick={closeCard} style={{float:"right",background:"none",border:"none",fontSize:18,cursor:"pointer",color:"#888880"}}>✕</button>
+            <div style={{fontSize:11,color:"#888880",marginBottom:4}}>#{panelSess.code} · {panelSess.category}</div>
+            {mode==="view"?(
+              <>
+                <h2 style={{fontSize:15,fontWeight:500,lineHeight:1.35,marginBottom:8,paddingRight:20,color:"#1a1a1a"}}>{panelSess.topic}</h2>
+                <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:12}}>
+                  {CRIT[panelSess.crit]&&<span style={{fontSize:11,padding:"2px 8px",borderRadius:10,background:CRIT[panelSess.crit].bg,color:CRIT[panelSess.crit].color,fontWeight:500}}>{CRIT[panelSess.crit].label}</span>}
+                  {panelSess.date&&<span style={{fontSize:11,padding:"2px 8px",borderRadius:10,background:"#F1F5F9",color:"#475569",fontWeight:500}}>📅 {fmtDate(panelSess.date)}</span>}
+                </div>
+                {panelSess.lead&&<div style={{marginBottom:10}}><div style={{fontSize:10,fontWeight:500,color:"#888880",textTransform:"uppercase",letterSpacing:".05em",marginBottom:2}}>Lead</div><div style={{fontSize:13,color:"#1a1a1a"}}>{panelSess.lead}</div></div>}
+                {panelSess.desc&&<div style={{marginBottom:10}}><div style={{fontSize:10,fontWeight:500,color:"#888880",textTransform:"uppercase",letterSpacing:".05em",marginBottom:2}}>Description</div><div style={{fontSize:13,lineHeight:1.5,color:"#1a1a1a"}}>{panelSess.desc}</div></div>}
+                <div style={{marginBottom:10}}>
+                  <div style={{fontSize:10,fontWeight:500,color:"#888880",textTransform:"uppercase",letterSpacing:".05em",marginBottom:5}}>Training sequence</div>
+                  {chain.length>1?(
+                    <div style={{display:"flex",flexWrap:"wrap",gap:4,alignItems:"center"}}>
+                      {chain.map((c,i)=>{
+                        const nd=byCd[c];const isCur=c===panel;
+                        return <span key={c} style={{display:"flex",alignItems:"center",gap:4}}>
+                          {i>0&&<span style={{color:"#888880",fontSize:11}}>→</span>}
+                          <span onClick={e=>{e.stopPropagation();openCard(c);}} style={{fontSize:11,padding:"3px 7px",borderRadius:6,cursor:"pointer",fontWeight:isCur?600:400,background:panelSc?panelSc.bg:"#eee",color:panelSc?panelSc.text:"#333",border:isCur?`1.5px solid ${panelSc?.border||"#aaa"}`:`0.5px solid ${(panelSc?.border||"#aaa")}88`}}>
+                            #{c} {nd?.topic}
+                          </span>
+                        </span>;
+                      })}
+                    </div>
+                  ):<div style={{fontSize:12,color:"#888880",fontStyle:"italic"}}>Standalone — no prerequisites</div>}
+                </div>
+                <div style={{display:"flex",gap:8,marginTop:12}}>
+                  <button onClick={()=>{setEForm({...panelSess});setMode("edit");}} style={{padding:"6px 14px",fontSize:12,border:"0.5px solid #d0d0cc",borderRadius:8,cursor:"pointer",background:"#f3f3f1",color:"#1a1a1a"}}>Edit</button>
+                  <button onClick={closeCard} style={{padding:"6px 14px",fontSize:12,border:"0.5px solid #d0d0cc",borderRadius:8,cursor:"pointer",background:"none",color:"#4a4a4a"}}>Close</button>
+                </div>
+              </>
+            ):(
+              <>
+                <h2 style={{fontSize:14,fontWeight:500,marginBottom:10,paddingRight:20,color:"#1a1a1a"}}>Editing #{eForm.code}</h2>
+                {[["Topic","topic","text"],["Lead","lead","text"],["Date","date","date"],["Description","desc","textarea"],["Predecessor -2","pre1","text"],["Predecessor -1","pre2","text"],["Successor 1","suc1","text"],["Successor 2","suc2","text"]].map(([l,k,t])=>(
+                  <label key={k} style={lbl}>{l}
+                    {t==="textarea"?<textarea value={eForm[k]||""} onChange={e=>setEForm(f=>({...f,[k]:e.target.value}))} rows={3} style={{...inp,resize:"vertical"}}/>
+                    :<input type={t} value={eForm[k]||""} onChange={e=>setEForm(f=>({...f,[k]:e.target.value}))} style={inp}/>}
+                  </label>
+                ))}
+                <label style={lbl}>Criticality
+                  <select value={eForm.crit||""} onChange={e=>setEForm(f=>({...f,crit:e.target.value}))} style={inp}>
+                    <option value="">— unset —</option>
+                    <option value="0">Business Critical</option>
+                    <option value="1">Medium</option>
+                    <option value="2">Low</option>
+                  </select>
+                </label>
+                <label style={lbl}>Category
+                  <select value={eForm.category||""} onChange={e=>setEForm(f=>({...f,category:e.target.value}))} style={inp}>
+                    {CATS.map(c=><option key={c} value={c}>{c}</option>)}
+                  </select>
+                </label>
+                <div style={{display:"flex",gap:8,marginTop:14}}>
+                  <button onClick={saveEdit} disabled={saving} style={{padding:"6px 14px",fontSize:12,border:"0.5px solid #d0d0cc",borderRadius:8,cursor:"pointer",background:"#f3f3f1",color:"#1a1a1a",opacity:saving?0.6:1}}>{saving?"Saving…":"Save & sync"}</button>
+                  <button onClick={()=>setMode("view")} style={{padding:"6px 14px",fontSize:12,border:"0.5px solid #d0d0cc",borderRadius:8,cursor:"pointer",background:"none",color:"#4a4a4a"}}>Cancel</button>
+                </div>
+              </>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Add modal */}
+      {addCat&&(
+        <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.55)",zIndex:300,display:"flex",alignItems:"center",justifyContent:"center"}}>
+          <div style={{background:"rgba(255,255,255,0.97)",borderRadius:12,padding:"1.5rem",width:340,maxHeight:"85vh",overflowY:"auto",border:"0.5px solid #d0d0cc",boxShadow:"0 8px 32px rgba(0,0,0,0.2)"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+              <h2 style={{fontSize:15,fontWeight:500,margin:0,color:"#1a1a1a"}}>New session</h2>
+              <button onClick={()=>setAddCat(null)} style={{background:"none",border:"none",fontSize:18,cursor:"pointer",color:"#888880"}}>✕</button>
+            </div>
+            <div style={{fontSize:11,color:"#888880",marginBottom:10}}>Adding to: {addCat}</div>
+            {[["Session Code *","code","text"],["Topic *","topic","text"],["Lead","lead","text"],["Date","date","date"],["Description","desc","textarea"],["Predecessor -2","pre1","text"],["Predecessor -1","pre2","text"],["Successor 1","suc1","text"],["Successor 2","suc2","text"]].map(([l,k,t])=>(
+              <label key={k} style={lbl}>{l}
+                {t==="textarea"?<textarea value={aForm[k]||""} onChange={e=>setAForm(f=>({...f,[k]:e.target.value}))} rows={3} style={{...inp,resize:"vertical"}}/>
+                :<input type={t} value={aForm[k]||""} onChange={e=>setAForm(f=>({...f,[k]:e.target.value}))} style={inp}/>}
+              </label>
+            ))}
+            <label style={lbl}>Criticality
+              <select value={aForm.crit||""} onChange={e=>setAForm(f=>({...f,crit:e.target.value}))} style={inp}>
+                <option value="">— unset —</option>
+                <option value="0">Business Critical</option>
+                <option value="1">Medium</option>
+                <option value="2">Low</option>
+              </select>
+            </label>
+            <div style={{display:"flex",gap:8,marginTop:14}}>
+              <button onClick={saveAdd} disabled={saving||!aForm.topic.trim()||!aForm.code.trim()} style={{padding:"6px 16px",fontSize:12,border:"0.5px solid #d0d0cc",borderRadius:8,cursor:"pointer",background:"#f3f3f1",color:"#1a1a1a",opacity:(saving||!aForm.topic.trim()||!aForm.code.trim())?0.5:1}}>{saving?"Saving…":"Add & sync"}</button>
+              <button onClick={()=>setAddCat(null)} style={{padding:"6px 14px",fontSize:12,border:"0.5px solid #d0d0cc",borderRadius:8,cursor:"pointer",background:"none",color:"#4a4a4a"}}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
